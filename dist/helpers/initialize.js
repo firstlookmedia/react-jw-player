@@ -20,6 +20,7 @@ function initialize(_ref) {
   player.on('error', function (e) {
     console.log('error', e);
     component.eventHandlers.onError;
+    component.props.onError;
   });
   player.on('adPlay', component.eventHandlers.onAdPlay);
   player.on('adPause', component.props.onAdPause);

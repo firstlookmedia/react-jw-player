@@ -10,7 +10,8 @@ function initialize({ component, player, playerOpts }) {
   player.on('setupError', component.eventHandlers.onError);
   player.on('error', (e) => {
     console.log('error', e);
-    component.eventHandlers.onError
+    component.eventHandlers.onError;
+    component.props.onError;
   });
   player.on('adPlay', component.eventHandlers.onAdPlay);
   player.on('adPause', component.props.onAdPause);
