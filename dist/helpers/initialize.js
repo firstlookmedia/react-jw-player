@@ -19,8 +19,8 @@ function initialize(_ref) {
   player.on('setupError', component.eventHandlers.onError);
   player.on('error', function (e) {
     console.log('error', e);
+    console.log('eventHandler', component.eventHandlers.onError);
     component.eventHandlers.onError;
-    component.props.onError;
   });
   player.on('adPlay', component.eventHandlers.onAdPlay);
   player.on('adPause', component.props.onAdPause);
