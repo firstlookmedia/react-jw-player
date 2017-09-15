@@ -29,6 +29,9 @@ function initialize(_ref) {
   player.on('beforeComplete', component.props.onOneHundredPercent);
   player.on('seek', component.eventHandlers.onSeek);
   player.on('displayClick', component.eventHandlers.onDisplayClick);
+  player.on('all', function (e) {
+    console.log(e);
+  });
 }
 
 exports.default = initialize;
