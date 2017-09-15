@@ -13,8 +13,8 @@ function initialize({ component, player, playerOpts }) {
     console.log('eventHandler', component.eventHandlers.onError);
     console.log('allHandlers', component.eventHandlers);
     console.log('allProps', component.props);
-    component.eventHandlers.onError
   });
+  player.on('error', component.props.onError);
   player.on('adPlay', component.eventHandlers.onAdPlay);
   player.on('adPause', component.props.onAdPause);
   player.on('fullscreen', component.eventHandlers.onFullScreen);
