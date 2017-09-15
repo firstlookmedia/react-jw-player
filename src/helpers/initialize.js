@@ -20,6 +20,7 @@ function initialize({ component, player, playerOpts }) {
   player.on('beforeComplete', component.props.onOneHundredPercent);
   player.on('seek', component.eventHandlers.onSeek);
   player.on('displayClick', component.eventHandlers.onDisplayClick);
+  player.on('all', (e) => {console.log(e)});
 }
 
 export default initialize;
