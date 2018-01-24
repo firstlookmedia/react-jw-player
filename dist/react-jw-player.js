@@ -22,6 +22,10 @@ var _getPlayerOpts = require('./helpers/get-player-opts');
 
 var _getPlayerOpts2 = _interopRequireDefault(_getPlayerOpts);
 
+var _getPlayerConfig = require('./helpers/get-player-config');
+
+var _getPlayerConfig2 = _interopRequireDefault(_getPlayerConfig);
+
 var _initialize2 = require('./helpers/initialize');
 
 var _initialize3 = _interopRequireDefault(_initialize2);
@@ -109,24 +113,28 @@ var ReactJWPlayer = function (_Component) {
       }
     }
   }, {
-    key: 'shouldComponentUpdate',
-    value: function shouldComponentUpdate(nextProps) {
-      var hasFileChanged = this.props.file !== nextProps.file;
-      var hasPlaylistChanged = this.props.playlist !== nextProps.playlist;
+    key: 'componentWillReceiveProps',
+    value: function componentWillReceiveProps(nextProps) {
+      var playerOpts = (0, _getPlayerOpts2.default)(this.props);
+      var nextPlayerOpts = (0, _getPlayerOpts2.default)(nextProps);
 
-      return hasFileChanged || hasPlaylistChanged;
+      this.player.setConfig((0, _getPlayerConfig2.default)(nextPlayerOpts));
+
+      if (playerOpts.playlist !== nextPlayerOpts.playlist && this.player) {
+        this.player.load(nextPlayerOpts.playlist);
+      }
     }
   }, {
-    key: 'componentDidUpdate',
-    value: function componentDidUpdate() {
-      if (window.jwplayer && window.jwplayer(this.props.playerId)) {
-        this._initialize();
-      }
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate() {
+      return false;
     }
   }, {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
-      (0, _removeJwPlayerInstance2.default)(this.props.playerId, window);
+      if (this.player) {
+        this.player.remove();
+      }
     }
   }, {
     key: '_initialize',
@@ -141,10 +149,10 @@ var ReactJWPlayer = function (_Component) {
       }
 
       var component = this;
-      var player = window.jwplayer(this.props.playerId);
+      this.player = window.jwplayer(this.props.playerId);
       var playerOpts = (0, _getPlayerOpts2.default)(this.props);
 
-      (0, _initialize3.default)({ component: component, player: player, playerOpts: playerOpts });
+      (0, _initialize3.default)({ component: component, player: this.player, playerOpts: playerOpts });
     }
   }, {
     key: 'render',
