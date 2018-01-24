@@ -30,6 +30,14 @@ var _installPlayerScript = require('./helpers/install-player-script');
 
 var _installPlayerScript2 = _interopRequireDefault(_installPlayerScript);
 
+var _removeJwPlayerInstance = require('./helpers/remove-jw-player-instance');
+
+var _removeJwPlayerInstance2 = _interopRequireDefault(_removeJwPlayerInstance);
+
+var _setJwPlayerDefaults = require('./helpers/set-jw-player-defaults');
+
+var _setJwPlayerDefaults2 = _interopRequireDefault(_setJwPlayerDefaults);
+
 var _defaultProps = require('./default-props');
 
 var _defaultProps2 = _interopRequireDefault(_defaultProps);
@@ -63,6 +71,11 @@ var ReactJWPlayer = function (_Component) {
     };
     _this.eventHandlers = (0, _createEventHandlers2.default)(_this);
     _this.uniqueScriptId = 'jw-player-script';
+
+    if (props.useMultiplePlayerScripts) {
+      _this.uniqueScriptId += '-' + props.playerId;
+    }
+
     _this._initialize = _this._initialize.bind(_this);
     return _this;
   }
@@ -71,12 +84,18 @@ var ReactJWPlayer = function (_Component) {
     key: 'componentDidMount',
     value: function componentDidMount() {
       var isJWPlayerScriptLoaded = !!window.jwplayer;
-      if (isJWPlayerScriptLoaded) {
+      var existingScript = document.getElementById(this.uniqueScriptId);
+      var isUsingMultiplePlayerScripts = this.props.useMultiplePlayerScripts;
+
+      if (!isUsingMultiplePlayerScripts && isJWPlayerScriptLoaded) {
         this._initialize();
         return;
       }
 
-      var existingScript = document.getElementById(this.uniqueScriptId);
+      if (isUsingMultiplePlayerScripts && existingScript) {
+        this._initialize();
+        return;
+      }
 
       if (!existingScript) {
         (0, _installPlayerScript2.default)({
@@ -90,15 +109,37 @@ var ReactJWPlayer = function (_Component) {
       }
     }
   }, {
+    key: 'shouldComponentUpdate',
+    value: function shouldComponentUpdate(nextProps) {
+      var hasFileChanged = this.props.file !== nextProps.file;
+      var hasPlaylistChanged = this.props.playlist !== nextProps.playlist;
+
+      return hasFileChanged || hasPlaylistChanged;
+    }
+  }, {
     key: 'componentDidUpdate',
-    value: function componentDidUpdate(prevProps) {
-      if (prevProps.playlist !== this.props.playlist || prevProps.file !== this.props.file || prevProps.isAutoPlay !== this.props.isAutoPlay) {
+    value: function componentDidUpdate() {
+      if (window.jwplayer && window.jwplayer(this.props.playerId)) {
         this._initialize();
       }
     }
   }, {
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      (0, _removeJwPlayerInstance2.default)(this.props.playerId, window);
+    }
+  }, {
     key: '_initialize',
     value: function _initialize() {
+      var _props = this.props,
+          playerId = _props.playerId,
+          useMultiplePlayerScripts = _props.useMultiplePlayerScripts;
+
+
+      if (useMultiplePlayerScripts) {
+        (0, _setJwPlayerDefaults2.default)({ context: window, playerId: playerId });
+      }
+
       var component = this;
       var player = window.jwplayer(this.props.playerId);
       var playerOpts = (0, _getPlayerOpts2.default)(this.props);
@@ -110,7 +151,7 @@ var ReactJWPlayer = function (_Component) {
     value: function render() {
       return _react2.default.createElement('div', {
         className: this.props.className,
-        dangerouslySetInnerHTML: {
+        dangerouslySetInnerHTML: { // eslint-disable-line react/no-danger
           __html: '<div id="' + this.props.playerId + '"></div>'
         }
       });

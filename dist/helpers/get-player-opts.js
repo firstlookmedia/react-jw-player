@@ -3,6 +3,9 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 function getPlayerOpts(opts) {
   var aspectRatio = opts.aspectRatio,
       _opts$customProps = opts.customProps,
@@ -12,14 +15,17 @@ function getPlayerOpts(opts) {
       image = opts.image,
       isAutoPlay = opts.isAutoPlay,
       isMuted = opts.isMuted,
+      licenseKey = opts.licenseKey,
       playlist = opts.playlist;
 
 
   var hasAdvertising = !!generatePrerollUrl;
 
-  var playerOpts = {
-    mute: !!isMuted
-  };
+  var playerOpts = {};
+
+  if (licenseKey) {
+    playerOpts.key = licenseKey;
+  }
 
   if (playlist) {
     playerOpts.playlist = playlist;
@@ -43,11 +49,15 @@ function getPlayerOpts(opts) {
     playerOpts.autostart = !!isAutoPlay;
   }
 
+  if (typeof isMuted !== 'undefined') {
+    playerOpts.mute = !!isMuted;
+  }
+
   if (image) {
     playerOpts.image = image;
   }
 
-  return Object.assign(playerOpts, customProps);
+  return _extends(playerOpts, customProps);
 }
 
 exports.default = getPlayerOpts;
