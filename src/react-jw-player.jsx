@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import createEventHandlers from './create-event-handlers';
 import getCurriedOnLoad from './helpers/get-curried-on-load';
 import getPlayerOpts from './helpers/get-player-opts';
+import getPlayerConfig from './helpers/get-player-config';
 import initialize from './helpers/initialize';
 import installPlayerScript from './helpers/install-player-script';
 import removeJWPlayerInstance from './helpers/remove-jw-player-instance';
@@ -56,19 +57,24 @@ class ReactJWPlayer extends Component {
       existingScript.onload = getCurriedOnLoad(existingScript, this._initialize);
     }
   }
-  shouldComponentUpdate(nextProps) {
-    const hasFileChanged = this.props.file !== nextProps.file;
-    const hasPlaylistChanged = this.props.playlist !== nextProps.playlist;
 
-    return hasFileChanged || hasPlaylistChanged;
-  }
-  componentDidUpdate() {
-    if (window.jwplayer && window.jwplayer(this.props.playerId)) {
-      this._initialize();
+  componentWillReceiveProps(nextProps) {
+    const playerOpts = getPlayerOpts(this.props);
+    const nextPlayerOpts = getPlayerOpts(nextProps);
+
+    this.player.setConfig(getPlayerConfig(nextPlayerOpts));
+
+    if (playerOpts.playlist !== nextPlayerOpts.playlist && this.player) {
+      this.player.load(nextPlayerOpts.playlist);
     }
   }
+  shouldComponentUpdate() {
+    return false;
+  }
   componentWillUnmount() {
-    removeJWPlayerInstance(this.props.playerId, window);
+    if (this.player) {
+      this.player.remove();
+    }
   }
   _initialize() {
     const { playerId, useMultiplePlayerScripts } = this.props;
@@ -78,10 +84,10 @@ class ReactJWPlayer extends Component {
     }
 
     const component = this;
-    const player = window.jwplayer(this.props.playerId);
+    this.player = window.jwplayer(this.props.playerId);
     const playerOpts = getPlayerOpts(this.props);
 
-    initialize({ component, player, playerOpts });
+    initialize({ component, player: this.player, playerOpts });
   }
   render() {
     return (
