@@ -9,7 +9,7 @@ test('getPlayerOpts() with defaults', (t) => {
   });
 
   t.equal(actual.playlist, mockPlaylist, 'it sets the playlist property to the supplied playlist');
-  t.equal(actual.mute, false, 'it sets the mute property to false');
+  t.equal(actual.mute, undefined, 'it sets the mute property to undefined');
   t.notOk(
     Object.prototype.hasOwnProperty.call(actual, 'aspectratio'),
     'it does not set aspectratio properties',
@@ -82,7 +82,7 @@ test('getPlayerOpts() with advertising', (t) => {
 
   t.equal(actual.aspectratio, '1:1', 'it sets the aspect ratio properly');
   t.equal(actual.playlist, mockPlaylist, 'it sets the playlist property to the supplied playlist');
-  t.equal(actual.mute, false, 'it sets the mute property to false');
+  t.equal(actual.mute, undefined, 'it sets the mute property to undefined');
   t.ok(actual.advertising, 'it sets advertising properties');
   t.equal(actual.advertising.client, 'googima', 'it sets the advertising client');
   t.equal(actual.advertising.admessage, 'Ad — xxs left', 'it sets the admessage');
@@ -130,6 +130,18 @@ test('getPlayerOpts() with image', (t) => {
   t.end();
 });
 
+test('getPlayerOpts() with license key', (t) => {
+  const mockKey = 'mock key';
+
+  const actual = getPlayerOpts({
+    licenseKey: mockKey,
+  });
+
+  t.equal(actual.key, mockKey, 'it sets the key property');
+
+  t.end();
+});
+
 test('getPlayerOpts() with customProps', (t) => {
   const customProps = {
     skin: {
@@ -140,6 +152,22 @@ test('getPlayerOpts() with customProps', (t) => {
   const actual = getPlayerOpts({ customProps });
 
   t.deepEqual(actual.skin, customProps.skin, 'it sets customProps properly');
+
+  t.end();
+});
+
+test('getPlayerOpts() with playlist as an array', (t) => {
+  const mockFile = 'mock file';
+
+  const mockPlaylist = [{
+    file: mockFile,
+  }];
+
+  const actual = getPlayerOpts({
+    playlist: mockPlaylist,
+  });
+
+  t.deepEqual(actual.playlist, mockPlaylist, 'it sets the playlist property');
 
   t.end();
 });

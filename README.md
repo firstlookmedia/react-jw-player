@@ -25,7 +25,7 @@ npm install react-jw-player
 
 ## Usage
 
-At the mininum, you can just use something like the two following code snippets:
+At the mininum, you can just use something like the three following code snippets:
 
 ### Playing a JW Player JSON Playlist
 ``` javascript
@@ -38,6 +38,37 @@ ReactDOM.render(
     playerId='my-unique-id'
     playerScript='https://link-to-my-jw-player/script.js'
     playlist='https://link-to-my-playlist.json'
+  />,
+  document.getElementById('my-root-div');
+);
+```
+
+### Playing a custom Playlist
+``` javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactJWPlayer from 'react-jw-player';
+
+const playlist = [{
+  file: 'https://link-to-my-video.mp4',
+  image: 'https://link-to-my-poster.jpg',
+  tracks: [{
+    file: 'https://link-to-subtitles.vtt',
+    label: 'English',
+    kind: 'captions',
+    'default': true
+  }],
+},
+{
+  file: 'https://link-to-my-other-video.mp4',
+  image: 'https://link-to-my-other-poster.jpg',
+}];
+
+ReactDOM.render(
+  <ReactJWPlayer
+    playerId='my-unique-id'
+    playerScript='https://link-to-my-jw-player/script.js'
+    playlist={playlist}
   />,
   document.getElementById('my-root-div');
 );
@@ -75,8 +106,8 @@ These are props that modify the basic behavior of the component.
   * Type: `string`
   * Example: `https://content.jwplatform.com/libraries/abCD1234.js`
 * `playlist` OR `file`
-  * Link to a valid JW Player playlist or video file. Cool tip: JW Player automatically generates JSON feeds for individual videos if you use the video id in place of `abCD1234`. You can use this to get meta data on the videos without loading an actual playlist.
-  * Type: `string`
+  * Link to a valid JW Player playlist or video file, or playlist array. Cool tip: JW Player automatically generates JSON feeds for individual videos if you use the video id in place of `abCD1234`. You can use this to get meta data on the videos without loading an actual playlist.
+  * Type: `string` (for `file` and `playlist`) or `array` (for `playlist`)
   * Example: `https//content.jwplatform.com/feeds/abCD1234.json`
 
 ## Optional Configuration Props
@@ -103,6 +134,12 @@ These are props that modify the basic behavior of the component.
 * `image`
   * URL to a poster image to display before playback starts
   * Type: `string`
+* `licenseKey`
+  * License Key as supplied in the jwplayer dashboard, under: Players > Tools > Downloads > JW Player X (Self-Hosted)
+  * Type: `string`
+* `useMultiplePlayerScripts`
+  * EXPERIMENTAL - Allows you to load multiple player scripts and still load the proper configuration. Expect bugs, but report them!
+  * Type: `boolean`
 
 ## Optional Advertising Event Hook Props
 * `onAdPause(event)`
@@ -119,6 +156,18 @@ These are props that modify the basic behavior of the component.
       * This is the event object passed back from JW Player itself.
 * `onAdResume(event)`
   * A function that is run when the user resumes playing the preroll advertisement.
+  * Type: `function`
+  * Arguments:
+    * `event`
+      * This is the event object passed back from JW Player itself.
+* `onAdSkipped(event)`
+  * A function that is run when the user skips an advertisement.
+  * Type: `function`
+  * Arguments:
+    * `event`
+      * This is the event object passed back from JW Player itself.
+* `onAdComplete(event)`
+  * A function that is run when an ad has finished playing.
   * Type: `function`
   * Arguments:
     * `event`
@@ -179,6 +228,12 @@ These are props that modify the basic behavior of the component.
   * Arguments:
     * `event`
       * This is the event object passed back from JW Player itself.
+* `onTime(event)`
+  * A function that is run whenever the playback position gets updated.
+  * Type: `function`
+  * Arguments:
+    * `event`
+      * This is the event object passed back from JW Player itself.
 * `onUnmute(event)`
   * A function that is run when the user unmutes the player.
   * Type: `function`
@@ -211,8 +266,20 @@ These are props that modify the basic behavior of the component.
   * Arguments:
     * `event`
       * This is the event object passed back from JW Player itself.
+* `onTwentyFivePercent(event)`
+  * A function that is run when the playhead reaches passed the 25% mark.
+  * Type: `function`
+  * Arguments:
+    * `event`
+      * This is the event object passed back from JW Player itself.
 * `onFiftyPercent(event)`
   * A function that is run when the playhead reaches passed the 50% mark.
+  * Type: `function`
+  * Arguments:
+    * `event`
+      * This is the event object passed back from JW Player itself.
+* `onSeventyFivePercent(event)`
+  * A function that is run when the playhead reaches passed the 75% mark.
   * Type: `function`
   * Arguments:
     * `event`
@@ -233,13 +300,15 @@ These are props that modify the basic behavior of the component.
 ## Example Container Component
 ``` javascript
 import React from 'react';
+import PropTypes from 'prop-types';
+
 import ReactJWPlayer from 'react-jw-player';
 
 const displayName = 'ReactJWPlayerContainer';
 
 const propTypes = {
-  playlist: React.PropTypes.string.isRequired,
-  playerScript: React.PropTypes.string.isRequired
+  playlist: PropTypes.string.isRequired,
+  playerScript: PropTypes.string.isRequired
 };
 
 class ReactJWPlayerContainer extends React.Component {
@@ -250,11 +319,16 @@ class ReactJWPlayerContainer extends React.Component {
     };
 
     this.onAdPlay = this.onAdPlay.bind(this);
+    this.onReady = this.onReady.bind(this);
     this.onVideoLoad = this.onVideoLoad.bind(this);
 
     // each instance of <ReactJWPlayer> needs a unique id.
     // we randomly generate it here and assign to the container instance.
     this.playerId = someFunctionToRandomlyGenerateId();
+  }
+  onReady(event) {
+    // interact with JW Player API here
+    const player = window.jwplayer(this.playerId);
   }
   onAdPlay(event) {
     // track the ad play here
@@ -268,9 +342,11 @@ class ReactJWPlayerContainer extends React.Component {
     return (
       <div className='react-jw-player-container'>
         <h1>{ this.state.videoTitle }</h1>
-        <JWPlayer
+        <ReactJWPlayer
           playlist={this.props.playlist}
+          licenseKey='your-license-key'
           onAdPlay={this.onAdPlay}
+          onReady={this.onReady}
           onVideoLoad={this.onVideoLoad}
           playerId={this.playerId} // bring in the randomly generated playerId
           playerScript='https://link-to-your-jw-player-script.js'

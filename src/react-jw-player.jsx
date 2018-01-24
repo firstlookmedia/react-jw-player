@@ -5,6 +5,8 @@ import getCurriedOnLoad from './helpers/get-curried-on-load';
 import getPlayerOpts from './helpers/get-player-opts';
 import initialize from './helpers/initialize';
 import installPlayerScript from './helpers/install-player-script';
+import removeJWPlayerInstance from './helpers/remove-jw-player-instance';
+import setJWPlayerDefaults from './helpers/set-jw-player-defaults';
 
 import defaultProps from './default-props';
 import propTypes from './prop-types';
@@ -21,16 +23,27 @@ class ReactJWPlayer extends Component {
     };
     this.eventHandlers = createEventHandlers(this);
     this.uniqueScriptId = 'jw-player-script';
+
+    if (props.useMultiplePlayerScripts) {
+      this.uniqueScriptId += `-${props.playerId}`;
+    }
+
     this._initialize = this._initialize.bind(this);
   }
   componentDidMount() {
     const isJWPlayerScriptLoaded = !!window.jwplayer;
-    if (isJWPlayerScriptLoaded) {
+    const existingScript = document.getElementById(this.uniqueScriptId);
+    const isUsingMultiplePlayerScripts = this.props.useMultiplePlayerScripts;
+
+    if (!isUsingMultiplePlayerScripts && isJWPlayerScriptLoaded) {
       this._initialize();
       return;
     }
 
-    const existingScript = document.getElementById(this.uniqueScriptId);
+    if (isUsingMultiplePlayerScripts && existingScript) {
+      this._initialize();
+      return;
+    }
 
     if (!existingScript) {
       installPlayerScript({
@@ -43,16 +56,27 @@ class ReactJWPlayer extends Component {
       existingScript.onload = getCurriedOnLoad(existingScript, this._initialize);
     }
   }
-  componentDidUpdate(prevProps) {
-    if (
-      prevProps.playlist !== this.props.playlist ||
-      prevProps.file !== this.props.file ||
-      prevProps.isAutoPlay !== this.props.isAutoPlay
-    ) {
+  shouldComponentUpdate(nextProps) {
+    const hasFileChanged = this.props.file !== nextProps.file;
+    const hasPlaylistChanged = this.props.playlist !== nextProps.playlist;
+
+    return hasFileChanged || hasPlaylistChanged;
+  }
+  componentDidUpdate() {
+    if (window.jwplayer && window.jwplayer(this.props.playerId)) {
       this._initialize();
     }
   }
+  componentWillUnmount() {
+    removeJWPlayerInstance(this.props.playerId, window);
+  }
   _initialize() {
+    const { playerId, useMultiplePlayerScripts } = this.props;
+
+    if (useMultiplePlayerScripts) {
+      setJWPlayerDefaults({ context: window, playerId });
+    }
+
     const component = this;
     const player = window.jwplayer(this.props.playerId);
     const playerOpts = getPlayerOpts(this.props);
@@ -63,7 +87,7 @@ class ReactJWPlayer extends Component {
     return (
       <div
         className={this.props.className}
-        dangerouslySetInnerHTML={{
+        dangerouslySetInnerHTML={{ // eslint-disable-line react/no-danger
           __html: `<div id="${this.props.playerId}"></div>`,
         }}
       />

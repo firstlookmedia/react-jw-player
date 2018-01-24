@@ -27,9 +27,13 @@ test('initialize()', (t) => {
     },
     props: {
       onAdPause: 'onAdPause',
+      onAdSkipped: 'onAdSkipped',
+      onAdComplete: 'onAdComplete',
       onOneHundredPercent: 'onOneHundredPercent',
       onPause: 'onPause',
       onReady: 'onReady',
+      onBuffer: 'onBuffer',
+      onBufferChange: 'onBufferChange',
     },
   };
 
@@ -75,6 +79,16 @@ test('initialize()', (t) => {
   t.equal(
     playerFunctions.adPause, mockComponent.props.onAdPause,
     'it sets the adPause event with the onAdPause() prop',
+  );
+
+  t.equal(
+    playerFunctions.adSkipped, mockComponent.props.onAdSkipped,
+    'it sets the adSkipped event with the onAdSkipped() prop',
+  );
+
+  t.equal(
+    playerFunctions.adComplete, mockComponent.props.onAdComplete,
+    'it sets the adComplete event with the onAdComplete() prop',
   );
 
   t.equal(
@@ -125,6 +139,16 @@ test('initialize()', (t) => {
   t.equal(
     playerFunctions.time, mockComponent.eventHandlers.onTime,
     'it sets the time event with the onTime() eventHandler',
+  );
+
+  t.equal(
+    playerFunctions.buffer, mockComponent.props.onBuffer,
+    'it sets the time event with the onBuffer() eventHandler',
+  );
+
+  t.equal(
+    playerFunctions.bufferChange, mockComponent.props.onBufferChange,
+    'it sets the time event with the onBufferChange() eventHandler',
   );
 
   t.end();
