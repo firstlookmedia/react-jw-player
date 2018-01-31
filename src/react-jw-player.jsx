@@ -62,11 +62,12 @@ class ReactJWPlayer extends Component {
     const playerOpts = getPlayerOpts(this.props);
     const nextPlayerOpts = getPlayerOpts(nextProps);
 
-    this.player.setConfig(getPlayerConfig(nextPlayerOpts));
-
     if (playerOpts.playlist !== nextPlayerOpts.playlist && this.player) {
       this.player.load(nextPlayerOpts.playlist);
     }
+
+    const config = getPlayerConfig(this.player.getConfig(), nextPlayerOpts);
+    this.player.setConfig(config);
   }
   shouldComponentUpdate() {
     return false;

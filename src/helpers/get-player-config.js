@@ -1,17 +1,17 @@
-function getPlayerConfig(playerOpts) {
+function getPlayerConfig(prevConfig, playerOpts) {
   const { autostart, mute, volume } = playerOpts;
 
   const playerConfig = {};
 
-  if (typeof autostart !== 'undefined') {
+  if (typeof autostart !== 'undefined' && prevConfig.autostart !== autostart) {
     playerConfig.autostart = autostart;
   }
 
-  if (typeof mute !== 'undefined') {
+  if (typeof mute !== 'undefined' && prevConfig.mute !== mute) {
     playerConfig.mute = mute;
   }
 
-  if (typeof volume !== 'undefined') {
+  if (typeof volume !== 'undefined' && prevConfig.volume !== volume) {
     playerConfig.volume = volume;
   }
 
