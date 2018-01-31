@@ -62,11 +62,12 @@ class ReactJWPlayer extends Component {
     const playerOpts = getPlayerOpts(this.props);
     const nextPlayerOpts = getPlayerOpts(nextProps);
 
-    this.player.setConfig(getPlayerConfig(nextPlayerOpts));
-
     if (playerOpts.playlist !== nextPlayerOpts.playlist && this.player) {
       this.player.load(nextPlayerOpts.playlist);
     }
+
+    const config = getPlayerConfig(this.player.getConfig(), nextPlayerOpts);
+    this.player.setConfig(config);
   }
   shouldComponentUpdate() {
     return false;
@@ -91,12 +92,7 @@ class ReactJWPlayer extends Component {
   }
   render() {
     return (
-      <div
-        className={this.props.className}
-        dangerouslySetInnerHTML={{ // eslint-disable-line react/no-danger
-          __html: `<div id="${this.props.playerId}"></div>`,
-        }}
-      />
+      <div className={this.props.className} id={this.props.playerId} />
     );
   }
 }
